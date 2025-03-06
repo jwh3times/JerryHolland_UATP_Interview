@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  rapidpay-api:
+    build: .
+    ports:
+      - "5000:80"
+    depends_on:
+      - sqlserver
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Server=localhost,1433;Database=master;User=sa;Password=RapidPay!;TrustServerCertificate=True;MultipleActiveResultSets=true;
+      - Jwt__Key=b2BX5VQLaHdKfz4e8TwtJ7W9YvAUEcgR
+      - Jwt__Issuer=RapidPayIssuer
+      - Jwt__Audience=RapidPayAudience
+
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: sqlserver
+    environment:
+      SA_PASSWORD: "RapidPay!"
+      ACCEPT_EULA: "Y"
+    ports:
+      - "1433:1433"
+    volumes:
+      - sqlserverdata:/var/opt/mssql
+
+volumes:
+  sqlserverdata:
