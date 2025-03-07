@@ -27,13 +27,29 @@ Now that you have the necessary prerequisites, let's get the project up and runn
     ```
 
 2. **Generate a .pfx Certificate:**
-    To run the application securely, you'll need to generate a `.pfx` certificate. You can do this using the `dotnet` CLI. Run the following command in your terminal from the root directory of the repo:
+    To run the application securely, you'll need to generate a `.pfx` certificate. You can do this using the `dotnet` CLI. Replace `<your-password>` in the command below with a secure password of your choice and run the command in your terminal from the root directory of the repo:
     ```sh
     dotnet dev-certs https -ep RapidPay/RapidPay.pfx -p <your-password> --trust
     ```
-    Replace `<your-password>` with a secure password of your choice. This will generate a `RapidPay.pfx` file that you can use for secure communication.
+   This will generate a `RapidPay.pfx` file that you can use for secure communication. The secure password that you selected will also need to be placed in appsettings.json in the location designated `<your-password>` below:
+   ```json
+   "Kestrel": {
+     "EndPoints": {
+       "Http": {
+         "Url": "http://*:5000"
+       },
+       "Https": {
+         "Url": "https://*:5001",
+         "Certificate": {
+           "Path": "./RapidPay.pfx",
+           "Password": <your-password>
+         }
+       }
+     }
+   }
+   ```
 
-3. **Build and Run Docker Containers:**
+4. **Build and Run Docker Containers:**
     Next, we'll use Docker to build and run the containers for both the application and the database. This is a two-step process:
     ```sh
     docker-compose build
