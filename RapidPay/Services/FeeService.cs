@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using RapidPay.Data;
+using RapidPay.DTOs;
 using RapidPay.Models;
 
 namespace RapidPay.Services
@@ -24,11 +25,11 @@ namespace RapidPay.Services
         /// Retrieves the current fee for transactions.
         /// </summary>
         /// <returns>The current transaction fee.</returns>
-        public async Task<decimal> GetCurrentFeeAsync()
+        public async Task<CurrentFeeDto> GetCurrentFeeAsync()
         {
             // Get the latest fee from the fee history
             var latestFee = await _context.FeeHistories.OrderByDescending(f => f.FeeDate).FirstOrDefaultAsync();
-            return latestFee?.Fee ?? 0.00m;
+            return new CurrentFeeDto() { CurrentFee = latestFee?.Fee ?? 0.00m };
         }
 
         /// <summary>
@@ -39,7 +40,7 @@ namespace RapidPay.Services
             var random = new Random();
             var newFeeMultiplier = (decimal)(random.NextDouble() * 2);
             var latestFee = await GetCurrentFeeAsync();
-            var newFee = latestFee == 0.00m ? newFeeMultiplier : Math.Round(latestFee * newFeeMultiplier, 2);
+            var newFee = latestFee.CurrentFee == 0.00m ? newFeeMultiplier : Math.Round(latestFee.CurrentFee * newFeeMultiplier, 2);
 
             // Prevent fee from being set to zero as the formula
             // 0 * newFeeMultiplier will always be zero meaning

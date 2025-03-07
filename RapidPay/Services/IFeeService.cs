@@ -1,4 +1,4 @@
-using System.Threading.Tasks;
+using RapidPay.DTOs;
 
 namespace RapidPay.Services
 {
@@ -7,7 +7,7 @@ namespace RapidPay.Services
     /// </summary>
     public interface IFeeService
     {
-        Task<decimal> GetCurrentFeeAsync();
+        Task<CurrentFeeDto> GetCurrentFeeAsync();
         Task<decimal> UpdateFeeAsync();
         Task<decimal> InitializeFeeAsync();
     }

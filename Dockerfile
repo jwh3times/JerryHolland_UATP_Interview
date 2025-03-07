@@ -5,6 +5,7 @@ WORKDIR /app
 # Copy csproj and restore as distinct layers
 COPY *.sln .
 COPY RapidPay/*.csproj ./RapidPay/
+COPY Tests/*.csproj ./Tests/
 RUN dotnet restore
 
 # Copy everything else and build

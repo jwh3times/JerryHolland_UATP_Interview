@@ -30,16 +30,27 @@ namespace RapidPay.Controllers
         [HttpPost("register")]
         public async Task<IActionResult> Register(UserAuthDto authDto)
         {
-            // Call the user service to register the user
-            var user = await _userService.RegisterUserAsync(authDto);
-            if (user == null)
+            try
             {
-                // Return BadRequest if registration fails
-                return BadRequest("User registration failed.");
-            }
+                // Call the user service to register the user
+                var user = await _userService.RegisterUserAsync(authDto);
+                if (user == null)
+                {
+                    // Return BadRequest if registration fails
+                    return BadRequest("User registration failed.");
+                }
 
-            // Return Ok if registration is successful
-            return Ok("User registered successfully.");
+                // Return Ok if registration is successful
+                return Ok("User registered successfully.");
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return Problem(ex.Message);
+            }
         }
 
         /// <summary>
@@ -50,16 +61,27 @@ namespace RapidPay.Controllers
         [HttpPost("login")]
         public async Task<IActionResult> Login(UserAuthDto authDto)
         {
-            // Call the user service to authenticate the user
-            var token = await _userService.AuthenticateUserAsync(authDto);
-            if (token == null)
+            try
             {
-                // Return Unauthorized if authentication fails
-                return Unauthorized("Invalid username or password.");
+                // Call the user service to authenticate the user
+                var token = await _userService.AuthenticateUserAsync(authDto);
+                if (token == null)
+                {
+                    // Return Unauthorized if authentication fails
+                    return Unauthorized("Invalid username or password.");
+                }
+    
+                // Return Ok with the JWT token if authentication is successful
+                return Ok(new { Token = token });
             }
-
-            // Return Ok with the JWT token if authentication is successful
-            return Ok(new { Token = token });
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return Problem(ex.Message);
+            }
         }
     }
 }

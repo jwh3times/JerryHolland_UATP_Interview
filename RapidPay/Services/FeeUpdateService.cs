@@ -10,19 +10,16 @@ namespace RapidPay.Services
     {
         private readonly ILogger<FeeUpdateService> _logger;
         private readonly IServiceProvider _serviceProvider;
-        private readonly ApplicationDbContext _context;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="FeeUpdateService"/> class.
         /// </summary>
         /// <param name="logger">The logger instance.</param>
         /// <param name="serviceProvider">The service provider.</param>
-        /// <param name="context">The database context.</param>
         public FeeUpdateService(ILogger<FeeUpdateService> logger, IServiceProvider serviceProvider, ApplicationDbContext context)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
-            _context = context ?? throw new ArgumentNullException(nameof(context));
         }
 
         /// <summary>
@@ -36,11 +33,16 @@ namespace RapidPay.Services
             // Register a callback to log when the service is stopping
             stoppingToken.Register(() => _logger.LogInformation("FeeUpdateService is stopping."));
 
-            // Ensure the database is ready before starting the main loop
-            while (_context.Database.GetPendingMigrations().Any() || !_context.Database.CanConnect())
+            using (var scope = _serviceProvider.CreateScope())
             {
-                _logger.LogInformation("Preparing database...");
-                await Task.Delay(TimeSpan.FromSeconds(5), stoppingToken);
+                var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+
+                // Ensure the database is ready before starting the main loop
+                while (context.Database.GetPendingMigrations().Any() || !context.Database.CanConnect())
+                {
+                    _logger.LogInformation("Preparing database...");
+                    await Task.Delay(TimeSpan.FromSeconds(5), stoppingToken);
+                }
             }
 
             // Main loop to update the fee periodically
@@ -58,7 +60,7 @@ namespace RapidPay.Services
 
                         // Update the fee and log the new value
                         var newFee = await feeService.UpdateFeeAsync();
-                        _logger.LogInformation($"Fee updated to {newFee}.");
+                        _logger.LogInformation($"Fee updated to {Math.Round(newFee, 2)}.");
                     }
                 }
                 catch (Exception ex)

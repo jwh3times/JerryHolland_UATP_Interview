@@ -27,8 +27,19 @@ namespace RapidPay.Controllers
         [Authorize]
         public async Task<IActionResult> GetCurrentFee()
         {
-            var currentFee = await _feeService.GetCurrentFeeAsync();
-            return Ok(currentFee);
+            try
+            {
+                var currentFee = await _feeService.GetCurrentFeeAsync();
+                return Ok(currentFee);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return Problem(ex.Message);
+            }
         }
     }
 }

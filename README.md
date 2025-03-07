@@ -2,99 +2,143 @@
 
 ## Overview
 
-RapidPay is a fast-growing payment provider. This project implements the Authorization System for RapidPay, which consists of three main modules: Card Management, Card Authorization, and Payment Fees.
+Welcome to RapidPay! We are excited to have you explore our system, which is designed to support a fast-growing payment provider. This project includes three fundamental modules: Card Management, Card Authorization, and Payment Fees. Each module is meticulously crafted to ensure efficient, secure, and reliable payment processing.
 
 ## Getting Started
 
+Before you begin, there are a few essential tools and prerequisites you'll need to have installed on your system. Don't worry, we'll guide you through every step of the setup process.
+
 ### Prerequisites
 
-- [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)
-- [Docker](https://www.docker.com/products/docker-desktop)
+To run this project, you'll need to have the following software installed:
+
+- **.NET 8 SDK:** This is the software development kit you'll need to build and run our C# application. You can download it from the [.NET official website](https://dotnet.microsoft.com/download/dotnet/8.0).
+- **Docker:** We use Docker to containerize the application and its dependencies, making it easier to manage and deploy. You can download Docker from the [Docker official website](https://www.docker.com/products/docker-desktop).
 
 ### Setting Up the Project
 
-1. Clone the repository:
-   ```sh
-   git clone https://github.com/yourusername/RapidPay.git
-   cd RapidPay
-   ```
+Now that you have the necessary prerequisites, let's get the project up and running. Follow these detailed steps:
 
-2. Build and run the Docker containers:
-   ```sh
-   docker-compose build
-   docker-compose up
-   ```
+1. **Clone the Repository:**
+    First, you'll need to copy the repository to your local machine. Open your terminal or command prompt and run the following commands:
+    ```sh
+    git clone https://github.com/jwh3times/JerryHolland_UATP_Interview.git
+    cd JerryHolland_UATP_Interview
+    ```
 
-   This will start the application and the SQL Server database in separate containers. The API will be accessible at `http://localhost:5000`.
+2. **Build and Run Docker Containers:**
+    Next, we'll use Docker to build and run the containers for both the application and the database. This is a two-step process:
+    ```sh
+    docker-compose build
+    docker-compose up
+    ```
 
-### API Documentation
+    By running these commands, Docker will start the application and the SQL Server database in separate containers. You can then access the API at `http://localhost:5000`.
 
-The API documentation is available via Swagger UI. To access the Swagger UI, navigate to `http://localhost:5000` in your browser.
+## API Documentation
 
-#### Card Management Module
+We have comprehensive API documentation available via Swagger UI. This intuitive interface makes it easy to explore and test the different endpoints. To access the Swagger UI, simply navigate to `http://localhost:5000` in your browser.
+
+### User Authorization Module
+
+The User Authorization module manages the authentication of users for RapidPay. Here are the relevant endpoints:
+
+1. **Register New User**
+    - **Endpoint:** `POST /api/user/register`
+    - **Description:** This endpoint registers a new user.
+    - **Request Body:**
+    ```json
+    { "Username": "{username}", "Password": "{plain text password}" }
+    ```
+    - **Response:** `200 OK` if the user is successfully registered.
+
+2. **Login User**
+    - **Endpoint:** `POST /api/user/login`
+    - **Description:** This endpoint is used to login an existing user.
+    - **Request Body:**
+    ```json
+    { "Username": "{username}", "Password": "{plain text password}" }
+    ```
+    - **Response:** `200 OK` with the users authenticated JWT token allowing access to other endpoints of RapidPay when passed in the headers of the request. This token will expire after 1 hour and the user will need to login again.
+
+### Card Management Module
+
+Here are the key endpoints in the Card Management module, along with detailed descriptions of their usage:
 
 1. **Create Card**
-   - `POST /api/cards`
-   - Request Body: `{ "creditLimit": 1000 }`
-   - Response: `200 OK` with card details
+    - **Endpoint:** `POST /api/cards`
+    - **Description:** This endpoint allows you to create a new card with a specified credit limit.
+    - **Request Body:** 
+      ```json
+      { "creditLimit": 1000 }
+      ```
+    - **Response:** `200 OK` with the details of the newly created card with the Card Number encrypted for security.
 
 2. **Authorize Card**
-   - `POST /api/cards/{cardId}/authorize`
-   - Response: `200 OK` if authorized
+    - **Endpoint:** `POST /api/cards/{encryptedCardNumber}/authorize`
+    - **Description:** This endpoint authorizes a card for use.
+    - **Response:** `200 OK` if the card is successfully authorized.
 
 3. **Pay with Card**
-   - `POST /api/cards/{cardId}/pay`
-   - Request Body: `{ "amount": 100 }`
-   - Response: `200 OK` with transaction details
+    - **Endpoint:** `POST /api/cards/{encryptedCardNumber}/pay`
+    - **Description:** This endpoint processes a payment using the specified card.
+    - **Request Body:** 
+      ```json
+      { "amount": 100 }
+      ```
+    - **Response:** `200 OK` with the details of the transaction.
 
 4. **Get Card Balance**
-   - `GET /api/cards/{cardId}/balance`
-   - Response: `200 OK` with card balance
+    - **Endpoint:** `GET /api/cards/{encryptedCardNumber}/balance`
+    - **Description:** This endpoint retrieves the current balance of the specified card.
+    - **Response:** `200 OK` with the card balance.
 
 5. **Update Card Details**
-   - `PUT /api/cards/{cardId}`
-   - Request Body: `{ "balance": 500, "creditLimit": 1000, "isActive": true }`
-   - Response: `200 OK` with updated card details
+    - **Endpoint:** `PATCH /api/cards/{encryptedCardNumber}`
+    - **Description:** This endpoint updates the details of a card, such as balance, credit limit, and activation status.
+    - **Request Body:** 
+      ```json
+      { "balance": 500, "creditLimit": 1000, "isActive": true }
+      ```
+    - **Response:** `200 OK` with the updated card details.
 
-#### Card Authorization Module
+### Card Authorization Module
 
-- **Authorize Card**
-  - `POST /api/authorization/{cardId}`
-  - Response: `200 OK` if authorized
+The Card Authorization module ensures that cards are authorized before use. This module doesn't expose any API endpoints, but rather functions as the Service to handle the authorization for the previously documented Card Authorization endpoint.
 
-#### Payment Fees Module
+### Payment Fees Module
+
+The Payment Fees module manages the fees associated with card transactions. Here are the relevant endpoints:
 
 1. **Get Current Fee**
-   - `GET /api/fees`
-   - Response: `200 OK` with current fee
+    - **Endpoint:** `GET /api/fees`
+    - **Description:** This endpoint retrieves the current transaction fee.
+    - **Response:** `200 OK` with the current fee details.
 
-2. **Update Fee**
-   - `POST /api/fees/update`
-   - Response: `200 OK` if fee updated successfully
+## Architectural Choices
 
-### Additional Information
+We have made several thoughtful architectural decisions to ensure that this project is robust, maintainable, and scalable. Here are some of the key choices:
 
-- Secure authentication is implemented using JWT.
-- The database schema and ORM usage are optimized for high efficiency.
-- Thread safety considerations are applied for concurrent transactions.
+- **Separation of Concerns:** The project is structured to separate different concerns into individual services and controllers. This modular approach makes the codebase easier to manage, test, and extend.
+- **Dependency Injection:** We use dependency injection to manage service lifetimes and dependencies. This design pattern improves testability and modularity by decoupling the creation of an object from its usage.
+- **Entity Framework Core:** For data access, we use Entity Framework Core. This powerful ORM (Object-Relational Mapper) allows us to interact with the database using .NET objects, making data access more intuitive and efficient.
 
-### Unit Tests
+## Thread Safety and Security Improvements
 
-Unit tests are included in the `Tests` project. To run the tests, use the following command:
+We have implemented several measures to ensure thread safety and enhance security in the application:
 
+- **Thread Safety:** To ensure thread safety, we use appropriate locking mechanisms and make sure that DbContext instances are not shared across threads. This prevents data corruption and ensures consistency in concurrent transactions.
+- **Secure Authentication:** We use JSON Web Tokens (JWT) for authentication. JWT provides a more secure method compared to basic authentication, allowing for secure token exchange and validation. This ensures that only authorized users can access the API.
+
+## Unit Tests
+
+Unit tests are an integral part of our development process. They help us ensure that the code is working as expected and make it easier to catch bugs early. We have included unit tests in the `Tests` project. To run the tests, use the following command:
 ```sh
 dotnet test
 ```
 
-### Architectural Choices
+Running the tests will execute all the unit tests and provide a report on their status.
 
-- The project is structured to separate concerns into different services and controllers.
-- Dependency injection is used to manage service lifetimes and dependencies.
-- Entity Framework Core is used for data access.
+## Conclusion
 
-### Thread Safety and Security Improvements
-
-- Thread safety is ensured by using appropriate locking mechanisms and ensuring that DbContext instances are not shared across threads.
-- Secure authentication is implemented using JWT, which provides a more secure method than basic authentication.
-
-We hope you find this implementation useful. Happy coding!
+We hope that this detailed README file helps you get started with the RapidPay Authorization System. If you have any questions or run into any issues, please feel free to reach out!

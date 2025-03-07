@@ -33,7 +33,7 @@ namespace RapidPay.Services
             var card = new Card
             {
                 CardNumber = Card.EncryptCardNumber(GenerateCardNumber()),
-                Balance = Math.Round(new decimal(new Random().NextDouble() * int.MaxValue), 2),
+                Balance = Math.Round(new decimal(new Random().NextDouble() * 1000000), 2),
                 CreditLimit = creditLimit,
                 IsActive = true
             };
@@ -50,7 +50,7 @@ namespace RapidPay.Services
         /// </summary>
         /// <param name="cardNumber">The number of the card to authorize.</param>
         /// <returns>True if the card is authorized; otherwise, false.</returns>
-        public async Task<bool> AuthorizeCardAsync(string cardNumber)
+        public async Task<bool> AuthorizeCardAsync(string cardNumber, decimal? amount)
         {
             try {
                 var authorized = false;
@@ -61,9 +61,9 @@ namespace RapidPay.Services
                 {
                     authorized = true;
 
-                    // Additional fraud checks can be implemented here
+                    // Load the last transaction for the card. If the transaction occured within the last 10 seconds and has the same amount, deny the authorization.
                     var lastTransaction = await _context.Transactions.Where(t => t.CardId == card.Id).OrderBy(t => t.TransactionDate).LastOrDefaultAsync();
-                    if (lastTransaction != null && lastTransaction.TransactionDate.AddSeconds(5) > DateTime.UtcNow)
+                    if (amount.HasValue && lastTransaction != null && lastTransaction.Amount == amount && lastTransaction.TransactionDate.AddSeconds(10) > DateTime.UtcNow)
                     {
                         authorized = false;
                     }
@@ -100,12 +100,26 @@ namespace RapidPay.Services
         {
             // Retrieve the card and current fee from the database
             var card = await _context.Cards.Where(c => c.CardNumber == cardNumber).FirstOrDefaultAsync();
+            if (card == null)
+            {
+                throw new KeyNotFoundException("Card not found.");
+            }
+
             var fee = await _feeService.GetCurrentFeeAsync();
 
-            // Check if the card is authorized and has sufficient balance
-            if (card == null || !card.IsActive || (card.Balance + card.CreditLimit) < (amount + fee))
+            // Check if the card is authorized
+            var authorized = await AuthorizeCardAsync(cardNumber, amount);
+            if (card == null || !authorized)
             {
-                throw new InvalidOperationException("Card is not authorized or has insufficient balance.");
+                throw new InvalidOperationException("Card is not authorized.");
+            }
+
+            // Check if the card has sufficient balance
+            var transactionAmount = amount + fee.CurrentFee;
+            var availableBalanceWithCredit = card.Balance + (card.CreditLimit ?? 0.00m);
+            if ((card.Balance + (card.CreditLimit ?? 0.00m)) < (amount + fee.CurrentFee))
+            {
+                throw new InvalidOperationException("Card has insufficient balance to complete this transaction.");
             }
 
             // Create a new transaction
@@ -114,12 +128,12 @@ namespace RapidPay.Services
                 CardId = card.Id,
                 Card = card,
                 Amount = amount,
-                Fee = fee,
+                Fee = fee.CurrentFee,
                 TransactionDate = DateTime.UtcNow
             };
 
             // Update the card balance and save the transaction
-            card.Balance -= amount + fee;
+            card.Balance -= amount + fee.CurrentFee;
             _context.Transactions.Add(transaction);
             await _context.SaveChangesAsync();
 
