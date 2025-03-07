@@ -16,5 +16,8 @@ RUN dotnet publish -c Release -o out
 # Build runtime image
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
 WORKDIR /app
+EXPOSE 5000
+EXPOSE 5001
 COPY --from=build /app/RapidPay/out ./
+COPY RapidPay/RapidPay.pfx /app/RapidPay.pfx
 ENTRYPOINT ["dotnet", "RapidPay.dll"]

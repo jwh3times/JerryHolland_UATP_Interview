@@ -33,11 +33,11 @@ Now that you have the necessary prerequisites, let's get the project up and runn
     docker-compose up
     ```
 
-    By running these commands, Docker will start the application and the SQL Server database in separate containers. You can then access the API at `http://localhost:5000`.
+    By running these commands, Docker will start the application and the SQL Server database in separate containers. You can then access the API at `https://localhost:5001`.
 
 ## API Documentation
 
-We have comprehensive API documentation available via Swagger UI. This intuitive interface makes it easy to explore and test the different endpoints. To access the Swagger UI, simply navigate to `http://localhost:5000` in your browser.
+We have comprehensive API documentation available via Swagger UI. This intuitive interface makes it easy to explore and test the different endpoints. To access the Swagger UI, simply navigate to `https://localhost:5001` in your browser.
 
 ### User Authorization Module
 

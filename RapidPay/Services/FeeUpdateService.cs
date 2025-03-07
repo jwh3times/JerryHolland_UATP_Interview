@@ -16,7 +16,7 @@ namespace RapidPay.Services
         /// </summary>
         /// <param name="logger">The logger instance.</param>
         /// <param name="serviceProvider">The service provider.</param>
-        public FeeUpdateService(ILogger<FeeUpdateService> logger, IServiceProvider serviceProvider, ApplicationDbContext context)
+        public FeeUpdateService(ILogger<FeeUpdateService> logger, IServiceProvider serviceProvider)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
