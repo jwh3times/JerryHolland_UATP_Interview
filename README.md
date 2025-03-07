@@ -26,7 +26,14 @@ Now that you have the necessary prerequisites, let's get the project up and runn
     cd JerryHolland_UATP_Interview
     ```
 
-2. **Build and Run Docker Containers:**
+2. **Generate a .pfx Certificate:**
+    To run the application securely, you'll need to generate a `.pfx` certificate. You can do this using the `dotnet` CLI. Run the following command in your terminal from the root directory of the repo:
+    ```sh
+    dotnet dev-certs https -ep RapidPay/RapidPay.pfx -p <your-password> --trust
+    ```
+    Replace `<your-password>` with a secure password of your choice. This will generate a `RapidPay.pfx` file that you can use for secure communication.
+
+3. **Build and Run Docker Containers:**
     Next, we'll use Docker to build and run the containers for both the application and the database. This is a two-step process:
     ```sh
     docker-compose build
@@ -122,12 +129,13 @@ We have made several thoughtful architectural decisions to ensure that this proj
 - **Separation of Concerns:** The project is structured to separate different concerns into individual services and controllers. This modular approach makes the codebase easier to manage, test, and extend.
 - **Dependency Injection:** We use dependency injection to manage service lifetimes and dependencies. This design pattern improves testability and modularity by decoupling the creation of an object from its usage.
 - **Entity Framework Core:** For data access, we use Entity Framework Core. This powerful ORM (Object-Relational Mapper) allows us to interact with the database using .NET objects, making data access more intuitive and efficient.
+- **Containerization:** By deploying the RapidPay app in a container we have laid the foundation for scaling the product up in the future to handle much greater load.
 
-## Thread Safety and Security Improvements
+## Performance Optimizations and Security Improvements
 
-We have implemented several measures to ensure thread safety and enhance security in the application:
+We have implemented several measures to boost performance and enhance security in the application:
 
-- **Thread Safety:** To ensure thread safety, we use appropriate locking mechanisms and make sure that DbContext instances are not shared across threads. This prevents data corruption and ensures consistency in concurrent transactions.
+- **Performance Optimization:** To boost performance, the use of .NET's async await functionality has been used extensively to prevent wasting time by waiting on I/O operations such as database access. By using Docker we also have a foundation that would allow scaling the product up using Kubernetes to deploy multiple copies of the RapidPay container.
 - **Secure Authentication:** We use JSON Web Tokens (JWT) for authentication. JWT provides a more secure method compared to basic authentication, allowing for secure token exchange and validation. This ensures that only authorized users can access the API.
 
 ## Unit Tests
